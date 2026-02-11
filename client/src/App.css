@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f4f7fb;
+  --bg-accent: #e9eef7;
+  --panel: #ffffff;
+  --text: #142033;
+  --muted: #5a6b83;
+  --border: #d5dfed;
+  --primary: #0b5fff;
+  --shadow: 0 12px 32px rgba(17, 41, 85, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 2rem;
+  color: var(--text);
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 5% 0%, #d8e6ff 0%, var(--bg) 45%), linear-gradient(135deg, var(--bg) 0%, var(--bg-accent) 100%);
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.page-header p {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.2fr 1fr;
+  grid-template-areas:
+    'map controls'
+    'climate climate'
+    'land land';
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.map-panel {
+  grid-area: map;
+}
+
+.controls-panel {
+  grid-area: controls;
+}
+
+.charts-panel {
+  grid-area: climate;
+}
+
+.charts-panel:last-child {
+  grid-area: land;
+}
+
+.panel h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.1rem;
+}
+
+.leaflet-view {
+  height: 320px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tile-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.controls-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.controls-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.controls-form input {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+.slider-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.slider-wrap input[type='range'] {
+  padding: 0;
+  accent-color: var(--primary);
+}
+
+.slider-wrap span {
+  min-width: 2.8rem;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.controls-form button {
+  grid-column: 1 / -1;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #0b5fff, #2d8cff);
+  cursor: pointer;
+}
+
+.controls-form button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.error-text {
+  margin: 0.7rem 0 0;
+  color: #b42318;
+  font-size: 0.9rem;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.chart-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  height: 270px;
+}
+
+.chart-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 980px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'map'
+      'controls'
+      'climate'
+      'land';
+  }
+
+  .controls-form {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}

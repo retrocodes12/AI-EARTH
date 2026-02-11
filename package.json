@@ -1,0 +1,35 @@
+{
+  "name": "ai-earth",
+  "version": "1.0.0",
+  "description": "Express backend for AI-EARTH",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "dev:backend": "node --watch src/server.js",
+    "dev:frontend": "npm --prefix client run dev -- --host 0.0.0.0 --port 5173",
+    "dev:all": "concurrently -k -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/retrocodes12/AI-EARTH.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/retrocodes12/AI-EARTH/issues"
+  },
+  "homepage": "https://github.com/retrocodes12/AI-EARTH#readme",
+  "dependencies": {
+    "@google/earthengine": "^1.7.13",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "jstat": "^1.9.6"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
