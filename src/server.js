@@ -891,7 +891,10 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
-    await initializeEarthEngine(process.env.GEE_KEY_PATH);
+    await initializeEarthEngine({
+      keyPath: process.env.GEE_KEY_PATH,
+      serviceAccountJson: process.env.GEE_SERVICE_ACCOUNT_JSON
+    });
     console.log('Google Earth Engine initialized successfully.');
 
     app.listen(port, () => {

@@ -253,8 +253,8 @@ function getPercentChange(series, key = 'value') {
 }
 
 function App() {
-  const [lat, setLat] = useState('28.6139');
-  const [lng, setLng] = useState('77.2090');
+  const [lat, setLat] = useState('10.8505');
+  const [lng, setLng] = useState('76.2711');
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
   const [beforeYear, setBeforeYear] = useState('2019');
@@ -290,7 +290,7 @@ function App() {
     if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
       return [latitude, longitude];
     }
-    return [28.6139, 77.209];
+    return [10.8505, 76.2711];
   }, [lat, lng]);
 
   function handleMapPick(latlng) {

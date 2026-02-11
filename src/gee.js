@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import ee from '@google/earthengine';
+import getKeralaRegion from './keralaRegion.js';
 
 function asError(error) {
   if (error instanceof Error) {
@@ -19,6 +20,19 @@ async function loadServiceAccountKey(keyPath) {
 
   if (!parsed.client_email || !parsed.private_key) {
     throw new Error('Invalid service account key file: expected client_email and private_key.');
+  }
+
+  return parsed;
+}
+
+function parseServiceAccountJson(serviceAccountJson) {
+  if (!serviceAccountJson) {
+    return null;
+  }
+
+  const parsed = JSON.parse(serviceAccountJson);
+  if (!parsed.client_email || !parsed.private_key) {
+    throw new Error('Invalid GEE_SERVICE_ACCOUNT_JSON: expected client_email and private_key.');
   }
 
   return parsed;
@@ -45,8 +59,9 @@ function initializeEeClient() {
   });
 }
 
-export async function initializeEarthEngine(keyPath) {
-  const privateKey = await loadServiceAccountKey(keyPath);
+export async function initializeEarthEngine({ keyPath, serviceAccountJson } = {}) {
+  const privateKey =
+    parseServiceAccountJson(serviceAccountJson) || (await loadServiceAccountKey(keyPath));
   await authenticateWithServiceAccount(privateKey);
   await initializeEeClient();
 }
@@ -278,8 +293,7 @@ export async function getRainfallTrendTimeSeries({ lat, lng, startDate, endDate 
 }
 
 export async function getLandChangeMap({ lat, lng, beforeYear, afterYear, type = 'ndvi' }) {
-  const point = ee.Geometry.Point([lng, lat]);
-  const region = point.buffer(20000);
+  const region = getKeralaRegion();
   const startBefore = ee.Date.fromYMD(beforeYear, 1, 1);
   const endBefore = startBefore.advance(1, 'year');
   const startAfter = ee.Date.fromYMD(afterYear, 1, 1);
@@ -380,8 +394,7 @@ export async function getLandChangeMap({ lat, lng, beforeYear, afterYear, type =
 }
 
 export async function getLandYearMap({ lat, lng, year }) {
-  const point = ee.Geometry.Point([lng, lat]);
-  const region = point.buffer(20000);
+  const region = getKeralaRegion();
   const start = ee.Date.fromYMD(year, 1, 1);
   const end = start.advance(1, 'year');
 
