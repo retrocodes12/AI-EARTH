@@ -36,6 +36,7 @@ const configuredOrigins = (process.env.CORS_ORIGIN || '')
   .map((origin) => origin.trim())
   .filter(Boolean);
 const localOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+const vercelAiEarthOriginPattern = /^https:\/\/ai-earth(?:-[a-z0-9-]+)?\.vercel\.app$/;
 
 app.use(
   cors({
@@ -46,6 +47,11 @@ app.use(
       }
 
       if (configuredOrigins.length > 0 && configuredOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      if (vercelAiEarthOriginPattern.test(origin)) {
         callback(null, true);
         return;
       }
