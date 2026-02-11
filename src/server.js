@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import cors from 'cors';
 import express from 'express';
+import { fileURLToPath } from 'node:url';
 import jstatPkg from 'jstat';
 import ee from '@google/earthengine';
 import getTrainedClassifier from './classifier.js';
@@ -20,11 +21,15 @@ dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+const currentModulePath = fileURLToPath(import.meta.url);
+const entryScriptPath = process.argv[1] || '';
+const isDirectRun = currentModulePath === entryScriptPath;
 const classificationCache = {};
 const statsCache = {};
 const statsPromiseCache = {};
 const responseCache = {};
 const inFlightResponseCache = {};
+let earthEngineInitPromise = null;
 const { jStat } = jstatPkg;
 const configuredOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
@@ -60,6 +65,25 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.originalUrl}`);
   next();
+});
+
+app.use(async (req, res, next) => {
+  try {
+    if (req.path === '/health') {
+      next();
+      return;
+    }
+
+    await ensureEarthEngineInitialized();
+    next();
+  } catch (error) {
+    console.error('Failed to initialize Google Earth Engine:', error);
+    res.status(500).json({
+      error: {
+        message: 'Earth Engine initialization failed. Check backend environment variables.'
+      }
+    });
+  }
 });
 
 app.get('/health', (req, res) => {
@@ -411,6 +435,24 @@ function computeLinearTrend(values) {
     slope: Number(slope.toFixed(6)),
     pValue: Number(pValue.toFixed(6))
   };
+}
+
+async function ensureEarthEngineInitialized() {
+  if (!earthEngineInitPromise) {
+    earthEngineInitPromise = initializeEarthEngine({
+      keyPath: process.env.GEE_KEY_PATH,
+      serviceAccountJson: process.env.GEE_SERVICE_ACCOUNT_JSON
+    })
+      .then(() => {
+        console.log('Google Earth Engine initialized successfully.');
+      })
+      .catch((error) => {
+        earthEngineInitPromise = null;
+        throw error;
+      });
+  }
+
+  return earthEngineInitPromise;
 }
 
 app.get('/ndvi-timeseries', async (req, res, next) => {
@@ -891,11 +933,7 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
-    await initializeEarthEngine({
-      keyPath: process.env.GEE_KEY_PATH,
-      serviceAccountJson: process.env.GEE_SERVICE_ACCOUNT_JSON
-    });
-    console.log('Google Earth Engine initialized successfully.');
+    await ensureEarthEngineInitialized();
 
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
@@ -906,4 +944,8 @@ async function startServer() {
   }
 }
 
-startServer();
+if (isDirectRun) {
+  startServer();
+}
+
+export default app;
