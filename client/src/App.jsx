@@ -104,6 +104,7 @@ const temperatureOptions = {
 };
 
 function toLineData(label, items, color) {
+  const hasSinglePoint = items.length <= 1;
   return {
     labels: items.map((item) => item.date),
     datasets: [
@@ -114,7 +115,7 @@ function toLineData(label, items, color) {
         backgroundColor: `${color}44`,
         borderWidth: 2.3,
         tension: 0.35,
-        pointRadius: 0,
+        pointRadius: hasSinglePoint ? 4 : 0,
         pointHoverRadius: 4,
         pointHitRadius: 12
       }
