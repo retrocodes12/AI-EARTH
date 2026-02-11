@@ -30,7 +30,7 @@ function parseServiceAccountJson(serviceAccountJson) {
     return null;
   }
 
-  const parsed = JSON.parse(serviceAccountJson);
+  const parsed = JSON.parse(String(serviceAccountJson).trim());
   if (!parsed.client_email || !parsed.private_key) {
     throw new Error('Invalid GEE_SERVICE_ACCOUNT_JSON: expected client_email and private_key.');
   }
@@ -44,7 +44,7 @@ function parseServiceAccountJsonBase64(serviceAccountJsonBase64) {
     return null;
   }
 
-  const decoded = Buffer.from(serviceAccountJsonBase64, 'base64').toString('utf8');
+  const decoded = Buffer.from(String(serviceAccountJsonBase64).trim(), 'base64').toString('utf8');
   const parsed = JSON.parse(decoded);
   if (!parsed.client_email || !parsed.private_key) {
     throw new Error(
@@ -81,10 +81,41 @@ export async function initializeEarthEngine({
   serviceAccountJson,
   serviceAccountJsonBase64
 } = {}) {
-  const privateKey =
-    parseServiceAccountJson(serviceAccountJson) ||
-    parseServiceAccountJsonBase64(serviceAccountJsonBase64) ||
-    (await loadServiceAccountKey(keyPath));
+  let privateKey = null;
+  const sourceErrors = [];
+
+  if (serviceAccountJson) {
+    try {
+      privateKey = parseServiceAccountJson(serviceAccountJson);
+    } catch (error) {
+      sourceErrors.push(`GEE_SERVICE_ACCOUNT_JSON: ${asError(error).message}`);
+    }
+  }
+
+  if (!privateKey && serviceAccountJsonBase64) {
+    try {
+      privateKey = parseServiceAccountJsonBase64(serviceAccountJsonBase64);
+    } catch (error) {
+      sourceErrors.push(`GEE_SERVICE_ACCOUNT_JSON_BASE64: ${asError(error).message}`);
+    }
+  }
+
+  if (!privateKey && keyPath) {
+    try {
+      privateKey = await loadServiceAccountKey(keyPath);
+    } catch (error) {
+      sourceErrors.push(`GEE_KEY_PATH: ${asError(error).message}`);
+    }
+  }
+
+  if (!privateKey) {
+    const message =
+      sourceErrors.length > 0
+        ? sourceErrors.join(' | ')
+        : 'No Earth Engine credentials provided. Set GEE_SERVICE_ACCOUNT_JSON, GEE_SERVICE_ACCOUNT_JSON_BASE64, or GEE_KEY_PATH.';
+    throw new Error(message);
+  }
+
   await authenticateWithServiceAccount(privateKey);
   await initializeEeClient();
 }
