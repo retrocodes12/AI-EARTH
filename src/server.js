@@ -80,7 +80,8 @@ app.use(async (req, res, next) => {
     console.error('Failed to initialize Google Earth Engine:', error);
     res.status(500).json({
       error: {
-        message: 'Earth Engine initialization failed. Check backend environment variables.'
+        message: 'Earth Engine initialization failed. Check backend environment variables.',
+        details: error?.message || 'Unknown error'
       }
     });
   }
@@ -441,7 +442,8 @@ async function ensureEarthEngineInitialized() {
   if (!earthEngineInitPromise) {
     earthEngineInitPromise = initializeEarthEngine({
       keyPath: process.env.GEE_KEY_PATH,
-      serviceAccountJson: process.env.GEE_SERVICE_ACCOUNT_JSON
+      serviceAccountJson: process.env.GEE_SERVICE_ACCOUNT_JSON,
+      serviceAccountJsonBase64: process.env.GEE_SERVICE_ACCOUNT_JSON_BASE64
     })
       .then(() => {
         console.log('Google Earth Engine initialized successfully.');

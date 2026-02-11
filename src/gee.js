@@ -34,7 +34,24 @@ function parseServiceAccountJson(serviceAccountJson) {
   if (!parsed.client_email || !parsed.private_key) {
     throw new Error('Invalid GEE_SERVICE_ACCOUNT_JSON: expected client_email and private_key.');
   }
+  parsed.private_key = String(parsed.private_key).replace(/\\n/g, '\n');
 
+  return parsed;
+}
+
+function parseServiceAccountJsonBase64(serviceAccountJsonBase64) {
+  if (!serviceAccountJsonBase64) {
+    return null;
+  }
+
+  const decoded = Buffer.from(serviceAccountJsonBase64, 'base64').toString('utf8');
+  const parsed = JSON.parse(decoded);
+  if (!parsed.client_email || !parsed.private_key) {
+    throw new Error(
+      'Invalid GEE_SERVICE_ACCOUNT_JSON_BASE64: expected client_email and private_key.'
+    );
+  }
+  parsed.private_key = String(parsed.private_key).replace(/\\n/g, '\n');
   return parsed;
 }
 
@@ -59,9 +76,15 @@ function initializeEeClient() {
   });
 }
 
-export async function initializeEarthEngine({ keyPath, serviceAccountJson } = {}) {
+export async function initializeEarthEngine({
+  keyPath,
+  serviceAccountJson,
+  serviceAccountJsonBase64
+} = {}) {
   const privateKey =
-    parseServiceAccountJson(serviceAccountJson) || (await loadServiceAccountKey(keyPath));
+    parseServiceAccountJson(serviceAccountJson) ||
+    parseServiceAccountJsonBase64(serviceAccountJsonBase64) ||
+    (await loadServiceAccountKey(keyPath));
   await authenticateWithServiceAccount(privateKey);
   await initializeEeClient();
 }
